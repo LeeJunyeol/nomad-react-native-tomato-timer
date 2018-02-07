@@ -2,7 +2,28 @@ import React, { Component } from "react";
 import { View, Text, StyleSheet, StatusBar } from "react-native";
 import Button from "../Button";
 
+function formatTime(time) {
+  let minutes = Math.floor(time / 60);
+  time -= minutes * 60;
+  let seconds = parseInt(time % 60, 10);
+  return `${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+}
+
 class Timer extends Component {
+  componentWillReceiveProps(nextProps) {
+    const currentProps = this.props;
+    if (!currentProps.isPlaying && nextProps.isPlaying) {
+      const timerInterval = setInterval(() => {
+        currentProps.addSecond();
+      }, 1000);
+      this.setState({
+        timerInterval
+      });
+    } else if (currentProps.isPlaying && !nextProps.isPlaying) {
+      clearInterval(this.state.timerInterval);
+    }
+  }
+
   render() {
     const {
       isPlaying,
@@ -16,12 +37,10 @@ class Timer extends Component {
       <View style={styles.container}>
         <StatusBar barStyle={"light-content"} />
         <View style={styles.upper}>
-          <Text style={styles.time}>25:00</Text>
+          <Text style={styles.time}>{formatTime(timerDuration - elapsedTime)}</Text>
         </View>
         <View style={styles.lower}>
-          {!isPlaying && (
-            <Button iconName="play-circle" onPress={startTimer} />
-          )}
+          {!isPlaying && <Button iconName="play-circle" onPress={startTimer} />}
           {isPlaying && (
             <Button iconName="stop-circle" onPress={restartTimer} />
           )}
